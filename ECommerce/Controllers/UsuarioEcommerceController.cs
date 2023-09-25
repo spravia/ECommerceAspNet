@@ -1,4 +1,5 @@
-﻿using Database.Models;
+﻿using Azure;
+using Database.Models;
 using ECommerce.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,14 +39,14 @@ namespace ECommerce.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetbyId(int id)
         {
-            var usuario = await _usuarioEcommerce.GetAsync(id);
+            var usuario = await _usuarioEcommerce.GetUserById(id);
 
             if (usuario == null)
             {
                 return NotFound();
             }
 
-            return Ok(await _usuarioEcommerce.GetAsync(id));
+            return Ok(await _usuarioEcommerce.GetUserById(id));
 
         }
 
@@ -75,18 +76,49 @@ namespace ECommerce.Controllers
 
 
         [HttpPost("adduser")]
-        public async Task Post([FromBody] UsuarioECommerceTable user)
+        public async Task<ActionResult> Post([FromBody] UserDataNew userNew)
         {
-
-            if ((user.Email.Trim() == " ") || (await _usuarioEcommerce.PostAsync(user) == null))
+            if (userNew.email.Trim() != " ")
             {
-                BadRequest();
-                return;
+                var response = await _usuarioEcommerce.PostAsync(userNew);
+
+                if(response.errorcode == 0)
+                {
+                    return Ok(response);  //Ok 
+                    
+                }
+                else
+                {
+                    return BadRequest(response);
+                }               
+            }else return BadRequest();
+        }
+
+        [HttpPut("updateuser")]
+        public async Task<ActionResult> Put(int id, [FromBody] UserData userdata)
+        {
+            var usu = await _usuarioEcommerce.GetUserById(id);
+
+            if (usu == null)
+            {
+                return BadRequest();
+
+            }
+            else
+            {
+                
+                if (await _usuarioEcommerce.PutAsync(id, userdata) != null)
+                {
+                    return Ok(userdata);
+                }
+                else
+                {
+                    return BadRequest(); 
+                }
+                                    
             }
 
-            Ok();  //Ok 
-            return;
         }
-       
+
     }
 }

@@ -22,5 +22,9 @@ namespace Database.Models
 
         public Roles? Roles { get; set; }
 
+
+        public UsuarioECommerceTable() { 
+               Roles = new Roles();
+        }
     }
 }

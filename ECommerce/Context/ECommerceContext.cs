@@ -1,4 +1,5 @@
-﻿using Database.Models;
+﻿using Database.DTO;
+using Database.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
 
@@ -21,6 +22,10 @@ namespace ECommerce.Context
 
         public DbSet<UsuarioECommerceTable> UsuECom { get; set; }
 
+        public DbSet<Categories> Categories { get; set; }
+
+        public DbSet<Products> Products { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Roles>()
@@ -28,6 +33,9 @@ namespace ECommerce.Context
                 .WithOne(e => e.Roles)
                 .HasForeignKey<Roles>(e => e.IdUsuarioECommerce)
                 .IsRequired();
+            
+            modelBuilder.Entity<Categories>().HasIndex(u => u.name).IsUnique();
+            
         }
     }
 

@@ -19,11 +19,11 @@ namespace Database.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public string NombreRole { get; set; }
+        public string? NombreRole { get; set; }
 
-        public string Image { get; set; }
+        public string? Image { get; set; }
 
-        public string Route{ get; set;}
+        public string? Route{ get; set;}
 
         public int IdUsuarioECommerce { get; set; }
         public UsuarioECommerceTable? UsuarioECommerceTable { get; set; }

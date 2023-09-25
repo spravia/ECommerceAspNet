@@ -23,6 +23,10 @@ builder.Services.AddDbContext<ECommerceContext>(options => options.UseSqlServer
 //Declarar acceso a las entidades mediante los servicios
 builder.Services.AddScoped<IUsuarioECommerce, UsuarioECommerce>();
 
+builder.Services.AddScoped<ICategories, CategoriesService>();
+
+builder.Services.AddScoped<IProducts, ProductsService>();
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

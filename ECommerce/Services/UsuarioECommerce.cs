@@ -14,6 +14,7 @@ namespace ECommerce.Services
         private readonly ECommerceContext _usuarioECommerceContext;
         private readonly AppSettings _appSettings;
                
+        private readonly RegisterResponse _registerResponse;
 
         //Constructor de la clase
         public UsuarioECommerce(ECommerceContext usuarioECommerceContext,
@@ -21,10 +22,8 @@ namespace ECommerce.Services
         {
             _usuarioECommerceContext = usuarioECommerceContext;
             _appSettings = appSet.Value;
-
         }
-
-        
+                
 
         public async Task<ActionResult<UsuarioECommerceTable>> DeleteAsync(int id)
         {
@@ -44,12 +43,20 @@ namespace ECommerce.Services
             return _usuarioECommerceContext.UsuECom;
         }
 
-        public async Task<UsuarioECommerceTable?> GetAsync(int id)
+        public async Task<UsuarioECommerceTable?> GetUserById(int id)
         {
-            return await _usuarioECommerceContext.UsuECom.FirstOrDefaultAsync(usu => usu.Id == id);
-        }
+            
+            var usu = await _usuarioECommerceContext.UsuECom.FirstOrDefaultAsync(usu => usu.Id == id);
+            if(usu != null)
+            {
+                return usu;
+            }else
+            {
+                return null;
+            }        
+           }
 
-        public async Task<UserData?> LoginAsync(string email, string password)
+        public async Task<UserData> LoginAsync(string email, string password)
         {
             var userData = new UserData();
             
@@ -66,7 +73,8 @@ namespace ECommerce.Services
                   userData.nombres = user?.Nombres;
                   userData.apellidos = user?.Apellidos;
                   userData.telefono = user?.Telefono.ToString();
-                  userData.roles = ""; 
+                    userData.correo = email.Trim();
+                  userData.roles = "CLIENT"; 
 
                   return userData;
 
@@ -147,7 +155,7 @@ namespace ECommerce.Services
 
         }
 
-        public async Task<UsuarioECommerceTable?> PostAsync(UsuarioECommerceTable? usuarioEcommerce)
+        public async Task<RegisterResponse?> PostAsync(UserDataNew? usuario)
         {
 
             string sSourceData;
@@ -155,38 +163,63 @@ namespace ECommerce.Services
             byte[] tmpHash;
             string password;
 
-            usuarioEcommerce.Email = usuarioEcommerce.Email.Trim();
-            UsuarioECommerceTable? user = await _usuarioECommerceContext.UsuECom.FirstOrDefaultAsync(mail => mail.Email == usuarioEcommerce.Email);
+            var UsuarioECommerce = new UsuarioECommerceTable();
+            var RolesUsu = new Roles();
+            var _registerResponse = new RegisterResponse();
+            
+            usuario.email = usuario.email.Trim();
+            UsuarioECommerceTable? user = await _usuarioECommerceContext.UsuECom.FirstOrDefaultAsync(mail => mail.Email == usuario.email);
 
             if (user == null)
             {
+                _registerResponse.errorcode = 0;
+                _registerResponse.errorDesc = "Success";
 
-                sSourceData = usuarioEcommerce.Password;
+                sSourceData = usuario.password;
                 tmpSource = ASCIIEncoding.ASCII.GetBytes(sSourceData);
                 tmpHash = new MD5CryptoServiceProvider().ComputeHash(tmpSource);
                 password = BitConverter.ToString(tmpHash);
-                usuarioEcommerce.Password = password;
+                usuario.password = password;
 
-                await _usuarioECommerceContext.UsuECom.AddAsync(usuarioEcommerce);
+                UsuarioECommerce.Nombres = usuario.nombres;
+                UsuarioECommerce.Apellidos = usuario.apellidos;
+                UsuarioECommerce.Email = usuario.email;
+                UsuarioECommerce.Password = usuario.password;
+                UsuarioECommerce.Telefono = usuario.telefono;
+
+
+                UsuarioECommerce.Roles.NombreRole = usuario.roles.NombreRole;
+                UsuarioECommerce.Roles.Image = "";
+                UsuarioECommerce.Roles.Route = "";
+                UsuarioECommerce.Roles.IdUsuarioECommerce = usuario.id;
+                
+                await _usuarioECommerceContext.UsuECom.AddAsync(UsuarioECommerce);
                 await _usuarioECommerceContext.SaveChangesAsync();
-                return usuarioEcommerce;
+                return _registerResponse;
             }
             else
             {
-                return null;
+
+                _registerResponse.errorcode = 1;
+                _registerResponse.errorDesc = "Error de datos";
+                return _registerResponse;
             }
 
         }
 
-        public async Task<UsuarioECommerceTable> PutAsync(int id, UsuarioECommerceTable usuarioEcommerce)
+        public async Task<UsuarioECommerceTable?> PutAsync(int id, UserData userdata)
         {
-            var usu = await _usuarioECommerceContext.UsuECom.FirstOrDefaultAsync(usu => usu.Id == id);
+            var usuarioEcommerce = await _usuarioECommerceContext.UsuECom.FirstOrDefaultAsync(usu => usu.Id == id);
 
-            if(usu != null)
+            if(usuarioEcommerce != null)
             {
-                _usuarioECommerceContext.Entry<UsuarioECommerceTable>(usu).CurrentValues.SetValues(usuarioEcommerce);
-                await _usuarioECommerceContext.SaveChangesAsync();
 
+                usuarioEcommerce.Telefono = Int32.Parse(userdata.telefono);
+                usuarioEcommerce.Nombres = userdata.nombres;
+                usuarioEcommerce.Apellidos = userdata.apellidos;
+
+                _usuarioECommerceContext.Entry<UsuarioECommerceTable>(usuarioEcommerce).CurrentValues.SetValues(usuarioEcommerce);
+                await _usuarioECommerceContext.SaveChangesAsync();
             }
 
             return usuarioEcommerce;

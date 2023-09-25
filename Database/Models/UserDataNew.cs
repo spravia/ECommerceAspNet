@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Database.Models
 {
-    public class UserData
+    public class UserDataNew
     {
 
         public int id  { get; set; }
@@ -17,9 +17,10 @@ namespace Database.Models
        
         public string email { get; set; }
 
-        public string telefono { get; set; }    
+        public string password { get; set; }
 
-        public string correo { get; set; }  
-        public string roles { get; set; }
+        public int? telefono { get; set; }    
+
+        public Roles? roles { get; set; }
     }
 }
